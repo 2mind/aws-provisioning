@@ -1,0 +1,126 @@
+{
+    "AWSTemplateFormatVersion" : "2010-09-09",
+
+    "Description" : "Deploys a three member replica set. Data nodes use EBS Storage. Arbiter uses ephemeral storage.",
+
+    "Parameters" : {
+        "MongoDBRSName": {
+          "Description": "The name of the MongoDB Replica Set. Also used as the AWS Name Tag",
+          "Type": "String"
+        },
+        "AWSKeyName": {
+          "Description": "The name of the AWS key used to access the instances",
+          "Type": "String"
+        },
+        "AWSAZMongoDB1": {
+            "Description": "MongoDB node availability zone.",
+            "Type": "String",
+            "AllowedValues": ["us-east-1a", "us-east-1b", "us-east-1c", "us-east-1d", "us-west-2a", "us-west-2b", "us-west-2c", "us-west-1a", "us-west-1c"]
+        },
+        "AWSAZMongoDB2": {
+            "Description": "MongoDB node availability zone.",
+            "Type": "String",
+            "AllowedValues": ["us-east-1a", "us-east-1b", "us-east-1c", "us-east-1d", "us-west-2a", "us-west-2b", "us-west-2c", "us-west-1a", "us-west-1c"]
+        },
+        "AWSAZMongoArb": {
+            "Description": "Mongo Arbiter availability zone.",
+            "Type": "String",
+            "AllowedValues": ["us-east-1a", "us-east-1b", "us-east-1c", "us-east-1d", "us-west-2a", "us-west-2b", "us-west-2c", "us-west-1a", "us-west-1c"]
+        },
+        "AWSInstanceType": {
+            "Description": "The AWS instance type (m1.medium, m1.large, etc) used for MongoDB Nodes (arbiters use m1.small).",
+            "Type": "String",
+            "Default": "m1.large",
+            "AllowedValues": ["m1.small", "m1.medium", "m1.large", "m1.xlarge", "m2.xlarge", "m2.2xlarge", "m2.4xlarge", "c1.xlarge", "cc1.4xlarge"]
+        },
+        "AWSVolumeSize": {
+            "Description": "The size of each drive (GB) in the Data Node''s RAID Array",
+            "Type": "String",
+            "Default": "10"
+        }
+    },
+
+    "Mappings" : {
+        "CFTemplates": {
+            "us-east-1": {
+                "ephemeral": "https://s3-us-east-1.amazonaws.com/cf-east-1/mongodb-ephemeral.json",
+                "8ebs": "https://s3.amazonaws.com/cf-east-1/mongodb-8ebs.json"
+            },
+            "us-west-1": {
+                "ephemeral": "https://s3-us-west-1.amazonaws.com/cf-west-1/mongodb-ephemeral.json",
+                "8ebs": "https://s3-us-west-1.amazonaws.com/cf-west-1/mongodb-8ebs.json"
+            },
+            "us-west-2": {
+                "ephemeral": "https://s3-us-west-2.amazonaws.com/cf-west-2/mongodb-ephemeral.json",
+                "8ebs": "https://s3-us-west-2.amazonaws.com/cf-west-2/mongodb-8ebs.json"
+            }
+        }
+    },
+
+    "Resources" : {
+        "MongoDBNode1" : { 
+            "Type" : "AWS::CloudFormation::Stack",
+            "Properties" : {
+                "TemplateURL" : {"Fn::FindInMap": ["CFTemplates", {"Ref": "AWS::Region"}, "8ebs"]},
+                "Parameters" : {
+                    "AWSAvailabilityZone": {"Ref": "AWSAZMongoDB1"},
+                    "AWSKeyName": {"Ref": "AWSKeyName"},
+                    "AWSInstanceType" : {"Ref": "AWSInstanceType"},
+                    "AWSVolumeSize": {"Ref": "AWSVolumeSize"},
+                    "NodeType": "DataNode",
+                    "RaidLevel": "raid-10",
+                    "MongoDBRSName": {"Ref": "MongoDBRSName"}
+                }
+            }
+        },
+        "MongoDBNode1EIP" : {
+            "Type" : "AWS::EC2::EIP",
+            "Properties" : {
+                "InstanceId" : { "Fn::GetAtt" : [ "MongoDBNode1", "Outputs.InstanceId" ]}
+            }
+        },
+        "MongoDBNode2" : {
+            "Type" : "AWS::CloudFormation::Stack",
+            "Properties" : {
+                "TemplateURL" : {"Fn::FindInMap": ["CFTemplates", {"Ref": "AWS::Region"}, "8ebs"]},
+                "Parameters" : {
+                    "AWSAvailabilityZone": {"Ref": "AWSAZMongoDB2"},
+                    "AWSKeyName": {"Ref": "AWSKeyName"},
+                    "AWSInstanceType" : {"Ref": "AWSInstanceType"},
+                    "AWSVolumeSize": {"Ref": "AWSVolumeSize"},
+                    "NodeType": "DataNode",
+                    "RaidLevel": "raid-10",
+                    "MongoDBRSName": {"Ref": "MongoDBRSName"}
+                }
+            }
+        },
+        "MongoDBNode2EIP" : {
+            "Type" : "AWS::EC2::EIP",
+            "Properties" : {
+                "InstanceId" : { "Fn::GetAtt" : [ "MongoDBNode2", "Outputs.InstanceId" ]}
+            }
+        },
+        "MongoDBArb" : {
+            "Type" : "AWS::CloudFormation::Stack",
+            "Properties" : {
+                "TemplateURL" : {"Fn::FindInMap": ["CFTemplates", {"Ref": "AWS::Region"}, "ephemeral"]},
+                "Parameters" : {
+                    "AWSAvailabilityZone": {"Ref": "AWSAZMongoArb"},
+                    "AWSKeyName": {"Ref": "AWSKeyName"},
+                    "AWSInstanceType" : "m1.small",
+                    "NodeType": "Arbiter",
+                    "MongoDBRSName": {"Ref": "MongoDBRSName"}
+                }
+            }
+        },
+        "MongoDBArbEIP" : {
+            "Type" : "AWS::EC2::EIP",
+            "Properties" : {
+                "InstanceId" : { "Fn::GetAtt" : [ "MongoDBArb", "Outputs.InstanceId" ]}
+            }
+        }
+    },
+
+    "Outputs" : {
+    }
+}

@@ -1,0 +1,222 @@
+{
+    "AWSTemplateFormatVersion" : "2010-09-09",
+
+    "Description" : "Deploys a MongoDB Node with eight EBS drives",
+
+    "Parameters" : {
+        "AWSAvailabilityZone": {
+            "Description": "The instance's availability zone.",
+            "Type": "String",
+            "AllowedValues": ["us-east-1a", "us-east-1b", "us-east-1c", "us-east-1d", "us-west-2a", "us-west-2b", "us-west-2c", "us-west-1a", "us-west-1c"]
+        },
+        "AWSKeyName": {
+            "Description": "The name of the AWS Key Pair used to secure the instance.",
+            "Type": "String",
+            "Default": "pd-key",
+            "AllowedValues": ["pd-key"]
+        },
+        "AWSInstanceType": {
+            "Description": "The AWS instance type (m1.medium, m1.large, etc) to launch",
+            "Type": "String",
+            "Default": "m1.large",
+            "AllowedValues": ["m1.small", "m1.medium", "m1.large", "m1.xlarge", "m2.xlarge", "m2.2xlarge", "m2.4xlarge", "c1.xlarge", "cc1.4xlarge"]
+        },
+        "AWSVolumeSize": {
+            "Description": "The amount of space to allocate for each drive in the RAID Array",
+            "Type": "Number"
+        },
+        "NodeType": {
+            "Description": "Specifies how the MongoDB is used. StandAlone, DataNode, or Arbiter.",
+            "Type": "String",
+            "AllowedValues": ["StandAlone", "DataNode", "Arbiter"],
+            "Default": "StandAlone"
+        },
+        "MongoDBRSName": {
+            "Description": "The name of the MongoDB Replica Set. Also used as the AWS Name Tag",
+            "Type": "String"
+        },
+        "RaidLevel": {
+            "Description": "The RAID Level Used",
+            "Type": "String",
+            "AllowedValues": ["raid-0", "raid-10"]
+        }
+    },
+
+    "Mappings" : {
+        "AMIRegion": {
+            "us-east-1": {"amicode": ""},
+            "us-west-1": {"amicode": ""},
+            "us-west-2": {"amicode": "ami-187cf528"}
+        }
+    },
+
+    "Resources" : {
+        "MongoDBNode8EBS": {
+            "Type" : "AWS::EC2::Instance",
+            "Properties": {
+
+            "AvailabilityZone": {"Ref": "AWSAvailabilityZone"},
+            "ImageId": {"Fn::FindInMap": ["AMIRegion", {"Ref": "AWS::Region"}, "amicode"]},
+            "InstanceType": {"Ref": "AWSInstanceType"},
+            "KeyName": {"Ref": "AWSKeyName"},
+            "SecurityGroups": ["mongodb"],
+            "Tags": [
+                {"Key": "Name", "Value": {"Ref": "MongoDBRSName"}},
+                {"Key": "AttachedDevices", "Value": "/dev/xvdf,/dev/xvdg,/dev/xvdh,/dev/xvdi,/dev/xvdj,/dev/xvdk,/dev/xvdl,/dev/xvdm"},
+                {"Key": "RaidLevel", "Value": {"Ref": "RaidLevel"}},
+                {"Key": "NodeType", "Value": {"Ref": "NodeType"}}
+                ]
+            }
+        },
+        "EBSVolume1" : {
+            "Type" : "AWS::EC2::Volume",
+            "Properties" : {
+                "Size" : { "Ref" : "AWSVolumeSize" },
+                "AvailabilityZone" : { "Fn::GetAtt" : [ "MongoDBNode8EBS", "AvailabilityZone" ]},
+                "Tags": [
+                    {"Key": "Name", "Value": {"Ref": "MongoDBRSName"}}
+                    ]
+                }
+        },
+        "EBSVolume2" : {
+            "Type" : "AWS::EC2::Volume",
+            "Properties" : {
+            "Size" : { "Ref" : "AWSVolumeSize" },
+            "AvailabilityZone" : { "Fn::GetAtt" : [ "MongoDBNode8EBS", "AvailabilityZone" ]},
+                "Tags": [
+                    {"Key": "Name", "Value": {"Ref": "MongoDBRSName"}}
+                ]
+            }
+        },
+        "EBSVolume3" : {
+            "Type" : "AWS::EC2::Volume",
+            "Properties" : {
+                "Size" : { "Ref" : "AWSVolumeSize" },
+                "AvailabilityZone" : { "Fn::GetAtt" : [ "MongoDBNode8EBS", "AvailabilityZone" ]},
+                "Tags": [
+                    {"Key": "Name", "Value": {"Ref": "MongoDBRSName"}}
+                ]
+            }
+        },
+        "EBSVolume4" : {
+            "Type" : "AWS::EC2::Volume",
+            "Properties" : {
+                "Size" : { "Ref" : "AWSVolumeSize" },
+                "AvailabilityZone" : { "Fn::GetAtt" : [ "MongoDBNode8EBS", "AvailabilityZone" ]},
+                "Tags": [
+                    {"Key": "Name", "Value": {"Ref": "MongoDBRSName"}}
+                ]
+            }
+        },
+        "EBSVolume5" : {
+            "Type" : "AWS::EC2::Volume",
+            "Properties" : {
+                "Size" : { "Ref" : "AWSVolumeSize" },
+                "AvailabilityZone" : { "Fn::GetAtt" : [ "MongoDBNode8EBS", "AvailabilityZone" ]},
+                "Tags": [
+                    {"Key": "Name", "Value": {"Ref": "MongoDBRSName"}}
+                ]
+            }
+        },
+        "EBSVolume6" : {
+            "Type" : "AWS::EC2::Volume",
+            "Properties" : {
+                "Size" : { "Ref" : "AWSVolumeSize" },
+                "AvailabilityZone" : { "Fn::GetAtt" : [ "MongoDBNode8EBS", "AvailabilityZone" ]},
+                "Tags": [
+                    {"Key": "Name", "Value": {"Ref": "MongoDBRSName"}}
+                ]
+            }
+        },
+        "EBSVolume7" : {
+            "Type" : "AWS::EC2::Volume",
+            "Properties" : {
+                "Size" : { "Ref" : "AWSVolumeSize" },
+                "AvailabilityZone" : { "Fn::GetAtt" : [ "MongoDBNode8EBS", "AvailabilityZone" ]},
+                "Tags": [
+                    {"Key": "Name", "Value": {"Ref": "MongoDBRSName"}}
+                ]
+            }
+        },
+        "EBSVolume8" : {
+            "Type" : "AWS::EC2::Volume",
+            "Properties" : {
+                "Size" : { "Ref" : "AWSVolumeSize" },
+                "AvailabilityZone" : { "Fn::GetAtt" : [ "MongoDBNode8EBS", "AvailabilityZone" ]},
+                "Tags": [
+                    {"Key": "Name", "Value": {"Ref": "MongoDBRSName"}}
+                ]
+            }
+        },
+        "MountPoint1" : {
+            "Type" : "AWS::EC2::VolumeAttachment",
+            "Properties" : {
+                "InstanceId" : { "Ref" : "MongoDBNode8EBS" },
+                "VolumeId"  : { "Ref" : "EBSVolume1" },
+                "Device" : "/dev/sdf"
+                }
+            },
+        "MountPoint2" : {
+            "Type" : "AWS::EC2::VolumeAttachment",
+            "Properties" : {
+                "InstanceId" : { "Ref" : "MongoDBNode8EBS" },
+                "VolumeId"  : { "Ref" : "EBSVolume2" },
+                "Device" : "/dev/sdg"
+            }
+        },
+        "MountPoint3" : {
+            "Type" : "AWS::EC2::VolumeAttachment",
+            "Properties" : {
+                "InstanceId" : { "Ref" : "MongoDBNode8EBS" },
+                "VolumeId"  : { "Ref" : "EBSVolume3" },
+                "Device" : "/dev/sdh"
+            }
+        },
+        "MountPoint4" : {
+            "Type" : "AWS::EC2::VolumeAttachment",
+            "Properties" : {
+                "InstanceId" : { "Ref" : "MongoDBNode8EBS" },
+                "VolumeId"  : { "Ref" : "EBSVolume4" },
+                "Device" : "/dev/sdi"
+            }
+        },
+        "MountPoint5" : {
+            "Type" : "AWS::EC2::VolumeAttachment",
+            "Properties" : {
+                "InstanceId" : { "Ref" : "MongoDBNode8EBS" },
+                "VolumeId"  : { "Ref" : "EBSVolume5" },
+                "Device" : "/dev/sdj"
+            }
+        },
+        "MountPoint6" : {
+            "Type" : "AWS::EC2::VolumeAttachment",
+            "Properties" : {
+                "InstanceId" : { "Ref" : "MongoDBNode8EBS" },
+                "VolumeId"  : { "Ref" : "EBSVolume6" },
+                "Device" : "/dev/sdk"
+            }
+        },
+        "MountPoint7" : {
+            "Type" : "AWS::EC2::VolumeAttachment",
+            "Properties" : {
+                "InstanceId" : { "Ref" : "MongoDBNode8EBS" },
+                "VolumeId"  : { "Ref" : "EBSVolume7" },
+                "Device" : "/dev/sdl"
+            }
+        },
+        "MountPoint8" : {
+            "Type" : "AWS::EC2::VolumeAttachment",
+            "Properties" : {
+                "InstanceId" : { "Ref" : "MongoDBNode8EBS" },
+                "VolumeId"  : { "Ref" : "EBSVolume8" },
+                "Device" : "/dev/sdm"
+            }
+        }
+    },
+    "Outputs": {
+        "InstanceId" : {
+            "Value" : { "Ref" : "MongoDBNode8EBS" },
+            "Description" : "Instance Id of newly created instance"
+        }
+    }
+}
