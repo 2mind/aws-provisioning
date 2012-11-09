@@ -1,6 +1,6 @@
 README
 ======
-The aws-ops project provides a means of provisioning and supporting instances in the AWS cloud using Boto, Fabric,
+The aws-provisioning demo provides a means of provisioning and supporting instances in the AWS cloud using Boto, Fabric,
 and Cloud Formation templates. This sample project supports launching a MongoDB Replica Set. Each instance runs Ubuntu
 12.x (x64).
 
