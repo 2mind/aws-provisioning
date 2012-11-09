@@ -38,7 +38,7 @@
         "AMIRegion": {
             "us-east-1": {"amicode": ""},
             "us-west-1": {"amicode": ""},
-            "us-west-2": {"amicode": "ami-187cf528"}
+            "us-west-2": {"amicode": ""}
         }
     },
 
